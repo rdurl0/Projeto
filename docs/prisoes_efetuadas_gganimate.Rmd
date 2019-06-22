@@ -1,0 +1,86 @@
+---
+title: "Número de prisões efetuadas para cada 100.000 habitantes"
+author: "Raul de Sá Durlo"
+date: "21/06/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = F,
+  comment = "#>",
+  message = F,
+  warning = F
+)
+```
+
+## Código
+
+```{r fig.width=10, fig.align='center'}
+# Pacotes ----------------------------------------------------------------------
+library(tidyverse)
+library(gganimate)
+library(spcrimr)
+
+# seleciona populacao-----------------------------------------------------------
+pop <- seade %>% select(chave, municipio, ano, populacao)
+
+# seleciona dados prisionais ---------------------------------------------------
+prisoes <- 
+  inner_join(pop, ssp_produtividade_policial,
+             by = c("chave", "municipio", "ano")) %>%
+  select(chave:ano,
+         populacao,
+         prisões_efetuadas) %>%
+  group_by(ano) %>%
+  summarise_at(vars(populacao,
+                    prisões_efetuadas),
+               ~ sum(.)) %>%
+  ungroup()
+
+# Visualiza --------------------------------------------------------------------
+options(gganimate.dev_args = list(width = 600, height = 500))
+
+prisoes %>%
+  mutate(taxa_presos = prisões_efetuadas/populacao*100000) %>%
+  
+  # começa ggplot -------------------------------------------#
+  ggplot(aes(x = as.integer(ano), y=taxa_presos)) +
+  # área ----------------------------------------------------#
+  geom_area(fill = "darkgrey", alpha = .7) + 
+  # textos --------------------------------------------------#
+  geom_text(size = 6,
+            hjust = 0,
+            aes(x = ano, 
+                label = format(taxa_presos,
+                               digits = 2L,
+                               decimal.mark = ",",
+                               big.mark = "."))) +
+  labs(title = "Número de prisões efetuadas para cada 100.000 habitantes",
+       subtitle = "Estado de São Paulo (2002-2017)",
+       x = "",
+       y = "") +
+  # gganimate ------------------------------------------------#
+  transition_reveal(ano) +
+  coord_cartesian(clip = "off") +
+  # temas ----------------------------------------------------#
+  theme_classic() +
+  theme(plot.margin = margin(25, 200, 25, 25),
+        axis.title = element_text(size = 13),
+        axis.text = element_text(size = 12),
+        plot.title = element_text(vjust = .5, hjust = .5, size = 17),
+        plot.subtitle = element_text(vjust = .5, hjust = .5, size = 13),
+        axis.text.x = element_text(angle = 45, hjust=1, vjust=1),
+        axis.line.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank()) +
+  # escalas ---------------------------------------------------#
+  scale_x_discrete(limits = seq(2002, 2017),
+                   breaks = seq(2002,2017),
+                   labels = seq(2002,2017))
+  # fim ggplot ------------------------------------------------#
+
+
+
+```
+
