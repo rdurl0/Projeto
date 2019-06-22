@@ -10,7 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 
 url <- paste0("https://rdurl0.github.io/Projeto/docs/",
-              list.files()[str_detect(list.files(), "html")])
+              list.files("./docs")[str_detect(list.files("./docs"), "html")])
+
 ```
 
 ## Projeto de pesquisa de doutorado
