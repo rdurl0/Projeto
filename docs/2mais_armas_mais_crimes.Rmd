@@ -138,6 +138,7 @@ ggplot(arma_homic, aes(x = as.integer(ano), y = taxa, group = nome)) +
   scale_color_manual(values=c("red", "darkred", "grey27", "black")) +
     # valores eixo y
   scale_y_continuous(breaks=seq(0,125, by=12.5))
+  
 
 ```
 
