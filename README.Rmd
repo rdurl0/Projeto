@@ -24,6 +24,7 @@ url <- paste0("https://rdurl0.github.io/Projeto/docs/", arquivos)
 
 indice <- arquivos %>% 
   str_remove("^[:digit:]") %>%
+  str_remove("^[:digit:]") %>%
   str_remove(".html") %>%
   str_replace_all("_", " ") %>%
   paste0("#### ", .)
@@ -44,3 +45,5 @@ indice <- arquivos %>%
 `r indice[6]` [clique aqui](`r url[6]`)
 
 `r indice[7]` [clique aqui](`r url[7]`)
+
+`r indice[8]` [clique aqui](`r url[8]`)

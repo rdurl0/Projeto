@@ -1,0 +1,79 @@
+---
+title: "Taxas médias de homicídio (2002 - 2017)"
+author: "Raul de Sá Durlo"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+##
+
+```{r fig.width=12, fig.height=8, fig.align='center', echo=FALSE}
+
+library(tidyverse)
+library(spcrimr)
+
+
+# Prepara dados ----------------------------------------------------------------
+hmc <- ssp_ocorrencias_crimes %>% select(chave:ano, homicidio_doloso)
+
+df <- seade %>%
+  select(chave:ano, populacao) %>%
+  inner_join(., hmc, by = c("chave", "municipio", "ano")) %>%
+  mutate(hmc = homicidio_doloso / populacao * 1e+05)
+
+df.estado <- df %>%
+  group_by(ano) %>%
+  summarise(hmc.mean = mean(hmc),
+            hmc.sd = sd(hmc))
+
+df.estado %>% 
+  ggplot(aes(x=ano)) +
+  geom_point(aes(y=hmc.mean)) +
+  geom_errorbar(aes(ymin=hmc.mean-hmc.sd,
+                    ymax=hmc.mean+hmc.sd),
+                width=.2,
+                position=position_dodge(.9)) +
+  labs(title = "Média das taxas de homicídio por 100.000 habitantes (2002 - 2017)",
+       subtitle = "Estado de São Paulo",
+       x = "Ano",
+       y = "Taxa de homicídio")
+```
+
+## Código
+
+```{r fig.width=12, fig.height=8, fig.align='center', eval=FALSE}
+
+library(tidyverse)
+library(spcrimr)
+
+
+# Prepara dados ----------------------------------------------------------------
+hmc <- ssp_ocorrencias_crimes %>% select(chave:ano, homicidio_doloso)
+
+df <- seade %>%
+  select(chave:ano, populacao) %>%
+  inner_join(., hmc, by = c("chave", "municipio", "ano")) %>%
+  mutate(hmc = homicidio_doloso / populacao * 1e+05)
+
+df.estado <- df %>%
+  group_by(ano) %>%
+  summarise(hmc.mean = mean(hmc) %>% log(),
+            hmc.sd = sd(hmc) %>% log())
+
+df.estado %>% 
+  ggplot(aes(x=ano)) +
+  geom_point(aes(y=hmc.mean)) +
+  geom_errorbar(aes(ymin=hmc.mean-hmc.sd,
+                    ymax=hmc.mean+hmc.sd),
+                width=.2,
+                position=position_dodge(.9)) +
+  labs(title = "Média das taxas de homicídio por 100.000 habitantes (2002 - 2017)",
+       subtitle = "Estado de São Paulo",
+       x = "Ano",
+       y = "Taxa de homicídio")
+```
