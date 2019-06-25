@@ -2,28 +2,45 @@
 output: github_document
 ---
 
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r echo=FALSE, warning=FALSE, message=FALSE}
-library(tidyverse)
-
-url <- paste0("https://rdurl0.github.io/Projeto/docs/",
-              list.files("./docs")[str_detect(list.files("./docs"), "html")])
-
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE
+)
 ```
 
 ## Projeto de pesquisa de doutorado
 
-### Conteúdo 
+### Conteúdo
 
-##### Mais armais, mais crimes- estado de São Paulo (2002-2017) ([Clique aqui](`r url[2]`))
+```{r echo=FALSE, results='asis'}
+library(tidyverse)
 
-##### Taxa de prisões efetuadas por 100.000 habitantes (2002-2017) ([Clique aqui](`r url[4]`))
+arquivos <- list.files("./docs")[str_detect(list.files("./docs"), "html")]
 
-##### Pessoas presas por flagrante e mandato - Taxa 100.000 habitantes. (2002-2017)  ([Clique aqui](`r url[5]`))
+url <- paste0("https://rdurl0.github.io/Projeto/docs/", arquivos)
 
-##### Pirâmide etária - Estado de São paulo (1980-2018) ([clique aqui](`r url[3]`))
+indice <- arquivos %>% 
+  str_remove("^[:digit:]") %>%
+  str_remove(".html") %>%
+  str_replace_all("_", " ") %>%
+  paste0("#### ", .)
+```
 
-##### Densidade demográfica e taxas de hpomicídio, por região. (2002-2017) ([Clique aqui](`r url[1]`))
+
+
+`r indice[1]` [clique aqui](`r url[1]`)
+
+`r indice[2]` [clique aqui](`r url[2]`)
+
+`r indice[3]` [clique aqui](`r url[3]`)
+
+`r indice[4]` [clique aqui](`r url[4]`)
+
+`r indice[5]` [clique aqui](`r url[5]`)
+
+`r indice[6]` [clique aqui](`r url[6]`)
+
+`r indice[7]` [clique aqui](`r url[7]`)

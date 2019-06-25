@@ -3,12 +3,16 @@
 
 ### Conteúdo
 
-##### Mais armais, mais crimes- estado de São Paulo (2002-2017) ([Clique aqui](https://rdurl0.github.io/Projeto/docs/mais_armas_mais_crimes.html))
+#### \[Gráfico\] Taxa de homicídios - 1980-2018 [clique aqui](https://rdurl0.github.io/Projeto/docs/0%5BGráfico%5D_Taxa_de_homicídios_-_1980-2018.html)
 
-##### Taxa de prisões efetuadas por 100.000 habitantes (2002-2017) ([Clique aqui](https://rdurl0.github.io/Projeto/docs/prisoes_efetuadas_gganimate.html))
+#### \[GIF\] Mais armas, mais crimes 1980-2018 [clique aqui](https://rdurl0.github.io/Projeto/docs/2%5BGIF%5D_Mais_armas,_mais_crimes_1980-2018.html)
 
-##### Pessoas presas por flagrante e mandato - Taxa 100.000 habitantes. (2002-2017) ([Clique aqui](https://rdurl0.github.io/Projeto/docs/prisoes_flagrantes_e_mandato.html))
+#### \[GIF\] Piramide etaria 1980-2018 [clique aqui](https://rdurl0.github.io/Projeto/docs/3%5BGIF%5D_Piramide_etaria_1980-2018.html)
 
-##### Pirâmide etária - Estado de São paulo (1980-2018) ([clique aqui](https://rdurl0.github.io/Projeto/docs/piramide_etaria_gganimate.html))
+#### \[GIF\] Número de prisoes efetuadas 2002-2018 [clique aqui](https://rdurl0.github.io/Projeto/docs/4%5BGIF%5D_Número_de_prisoes_efetuadas_2002-2018.html)
 
-##### Densidade demográfica e taxas de hpomicídio, por região. (2002-2017) ([Clique aqui](https://rdurl0.github.io/Projeto/docs/densidade_demografica_versus_tx_homicidio.html))
+#### \[Gráfico\] Prisoes flagrantes e mandato 2002-2018 [clique aqui](https://rdurl0.github.io/Projeto/docs/5%5BGráfico%5D_Prisoes_flagrantes_e_mandato_2002-2018.html)
+
+#### \[GIF\] Taxa de homicídios e densidade demográfica 2002-1980 [clique aqui](https://rdurl0.github.io/Projeto/docs/6%5BGIF%5D_Taxa_de_homicídios_e_densidade_demográfica_2002-1980.html)
+
+#### \[Gráfico\] Taxa de suicidios 2002-2018 [clique aqui](https://rdurl0.github.io/Projeto/docs/7%5BGráfico%5D_Taxa_de_suicidios_2002-2018.html)
