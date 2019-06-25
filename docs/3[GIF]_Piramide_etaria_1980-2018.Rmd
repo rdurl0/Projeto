@@ -1,0 +1,138 @@
+---
+title: "Pirâmide Etária - População (em milhares) e Faixas Etárias"
+author: "Raul de Sá Durlo"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = F,
+  comment = "#>",
+  message = F,
+  warning = F
+)
+```
+
+## Código
+
+```{r fig.width=10, fig.align='center'}
+# pacotes ----------------------------------------------------------------------
+library(tidyverse)
+library(gganimate)
+library(spcrimr)
+library(lubridate)
+
+## Transform: `pop -> faixa_etaria` --------------------------------------------
+
+### define os textos dos eixos em vetores
+y_labs <- as.character(c(seq(2500, 0, -250), seq(250, 2500, 250))) 
+
+x_labs <-
+  c(paste(seq(0, 70, by=5), "até", seq(4, 74, by=5)), "75 e mais") %>% 
+  str_replace("5 até 9", "05 até 09") %>%
+  str_replace("^0 até 4", "0 até 04")
+
+### os labels dos eixos entram como variáveis categóricas na tabela
+# repete 'x_lab' e 'y_lab' para elas terem o tamando da tabela 'seade'
+
+faixa_etaria <- 
+  tibble(faixa_etaria = rep(x_labs, 40), id = rep(seq(1,16), 40)) %>%
+  arrange(id)
+
+faixa_etaria <- bind_rows(faixa_etaria, faixa_etaria) %>% select(faixa_etaria)
+
+### define a tabela 'faixa_etaria'
+
+faixa_etaria <-
+  unnest(seade_completa) %>%
+  select(
+    ano,
+    populacao_masculina_de_0_a_4_anos,
+    populacao_masculina_de_5_a_9_anos,
+    populacao_masculina_de_10_a_14_anos:populacao_masculina_de_45_a_49_anos,
+    populacao_masculina_de_50_a_54_anos:populacao_masculina_de_75_anos_e_mais,
+    populacao_feminina_de_0_a_4_anos,
+    populacao_feminina_de_5_a_9_anos,
+    populacao_feminina_de_10_a_14_anos:populacao_feminina_de_45_a_49_anos,
+    populacao_feminina_de_50_a_54_anos:populacao_feminina_de_75_anos_e_mais
+  ) %>%
+  group_by(ano) %>%
+  summarise_all(sum, na.rm = TRUE) %>%
+  gather(key = ano, value = populacao) %>%
+  rename(cod = ano) %>%
+  mutate(genero = as.factor(c(rep("Masculina", 640), rep("Feminina", 640))),
+         faixa_etaria = faixa_etaria$faixa_etaria,
+         ano = rep(year(seq(as.POSIXct("1980-01-01"),
+                            by = "year", length.out = 40)), 32),
+         cod = as.factor(cod))
+
+### este será o label com as idades
+grupo_etario <- 
+  faixa_etaria %>% 
+  group_by(faixa_etaria) %>%
+  summarise()
+
+# espelha "feminino" e "masculino"
+faixa_etaria$populacao <- ifelse(faixa_etaria$genero=="Masculina", 
+                                 -1 * faixa_etaria$populacao,
+                                 faixa_etaria$populacao)
+
+## Viz `faixa_etaria`: Pirâmide etária -----------------------------------------
+
+options(gganimate.dev_args = list(width = 900, height = 700))
+
+  # começa ggplot -----------------------------------------------------#
+ggplot(faixa_etaria, aes(x = faixa_etaria,
+                         y = populacao,
+                         fill = genero,
+                         color = genero)) +
+  # as barras ---------------------------------------------------------#
+  geom_bar(data = filter(faixa_etaria, genero=="Feminina" ),
+           alpha =.5,
+           stat ="identity",
+           color ="black", size=.2) +
+  geom_bar(data = filter(faixa_etaria, genero=="Masculina"),
+           alpha = .5,
+           stat = "identity",
+           color = "black",
+           size = .2) +
+  # escalas ----------------------------------------------------------#
+  scale_y_continuous(breaks = seq(-2500000, 2500000, 250000),
+                     labels = y_labs) +
+  scale_x_discrete(labels = grupo_etario) + 
+  scale_fill_manual(values = c("coral2", "plum4")) +
+  # gira o eixo ------------------------------------------------------#
+  coord_flip() +
+  # textos -----------------------------------------------------------#
+  labs(title = "Pirâmide Etária - População (em milhares) e Faixas Etárias",
+       subtitle = "Estado de São Paulo {frame_time}",
+       x = "Idade",
+       y = "População (em milhares)") +
+  # temas ------------------------------------------------------------#
+  theme(plot.title = element_text(hjust = .5, size = 20, face = 'bold'),
+        plot.subtitle = element_text(hjust = .5, size = 20, face = 'bold'),
+        legend.position = c(.85,.85),
+        legend.title = element_blank(),
+        legend.background = element_rect(line = 'solid', color = 'black'),
+        legend.key.size = unit(.5, "cm"),
+        axis.ticks = element_line(),
+        legend.text = element_text(size = 17, hjust = 1),
+        axis.text.x = element_text(size = 12, angle = 45, hjust = 1, vjust = 1),
+        axis.text.y = element_text(size = 12),
+        axis.line.x = element_line(),
+        axis.line.y = element_blank(),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_blank(),
+        panel.background = element_rect(fill = "azure",
+                                        colour = "azure",
+                                        size = 0.5, linetype = "solid"),
+        panel.grid.major = element_line(size = 0.5, linetype = 'solid',
+                                        colour = "azure2"), 
+        panel.grid.minor = element_line(size = 0.5, linetype = 'solid',
+                                        colour = "azure2")) +
+  # animations params --------------------------------------------------#
+  transition_time(as.integer(ano))
+  # fim ggplot ---------------------------------------------------------#
+
+```
+

@@ -1,0 +1,125 @@
+---
+title: "Taxa de homicídios e densidade demográfica"
+author: "Raul de Sá Durlo"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = F,
+  comment = "#>",
+  message = F,
+  warning = F
+)
+```
+
+
+```{r fig.width=10, fig.align='center', echo=FALSE}
+
+# pacotes ----------------------------------------------------------------------
+library(tidyverse)
+library(gganimate)
+library(spcrimr)
+library(lubridate)
+library(sf)
+
+options(gganimate.dev_args = list(width = 1000, height = 900))
+
+seade %>%
+  select(chave:nome_localidade_pai, populacao) %>%
+  inner_join(sf_sampa, .,
+             by = c("chave", "municipio")) %>%
+  inner_join(., select(ssp_ocorrencias_crimes, chave:ano, homicidio_doloso),
+             by = c("municipio", "chave", "ano")) %>%
+  
+  # transforma variáveis
+  mutate(area_km2 = round(unclass(st_area(.))[1:nrow(seade)] / 1000000),
+         dens_demogr = populacao / area_km2,
+         ano = as.integer(ano)) %>%
+  select(nm_municip,
+         ano,
+         area_km2,
+         dens_demogr,
+         everything()) %>%
+  st_set_geometry(NULL) %>%
+  filter(populacao > 50000) %>%
+  #filter(nome_localidade_pai == "Região de Governo de Bragança Paulista") %>%
+  ggplot(aes(x = log(dens_demogr), y = log(homicidio_doloso / populacao))) +
+  geom_point(show.legend = FALSE,
+             shape = 2,
+             size = 3,
+             aes(color = nome_localidade_pai,
+                 fill = nome_localidade_pai)) +
+  #geom_label(aes(label=nm_municip_ascii)) +
+  geom_smooth(color = "black",
+              se = FALSE, 
+              method = lm,
+              size = .5) +
+  theme_bw() +
+  transition_time(ano) +
+  labs(title = "{frame_time}")  +
+  # texto --------------------------------------------------#
+  labs(title = "Ano: {frame_time}",
+       subtitle = "Municípios acima de 50.000 habitantes",
+       x = "Densidade demográfica (hab/Km2)",
+       y = "Taxa de Homicídio")
+  
+
+```
+
+
+
+## Código
+
+```{r fig.width=10, fig.align='center', eval=FALSE}
+# pacotes ----------------------------------------------------------------------
+library(tidyverse)
+library(gganimate)
+library(spcrimr)
+library(lubridate)
+library(sf)
+
+options(gganimate.dev_args = list(width = 1000, height = 900))
+
+seade %>%
+  select(chave:nome_localidade_pai, populacao) %>%
+  inner_join(sf_sampa, .,
+             by = c("chave", "municipio")) %>%
+  inner_join(., select(ssp_ocorrencias_crimes, chave:ano, homicidio_doloso),
+             by = c("municipio", "chave", "ano")) %>%
+  
+  # transforma variáveis
+  mutate(area_km2 = round(unclass(st_area(.))[1:nrow(seade)] / 1000000),
+         dens_demogr = populacao / area_km2,
+         ano = as.integer(ano)) %>%
+  select(nm_municip,
+         ano,
+         area_km2,
+         dens_demogr,
+         everything()) %>%
+  st_set_geometry(NULL) %>%
+  filter(populacao > 50000) %>%
+  #filter(nome_localidade_pai == "Região de Governo de Bragança Paulista") %>%
+  ggplot(aes(x = log(dens_demogr), y = log(homicidio_doloso / populacao))) +
+  geom_point(show.legend = FALSE,
+             #shape = 2,
+             size = 2,
+             aes(color = nome_localidade_pai,
+                 fill = nome_localidade_pai)) +
+  #geom_label(aes(label=nm_municip_ascii)) +
+  geom_smooth(color = "black",
+              se = FALSE, 
+              method = lm,
+              size = .5) +
+  theme_bw() +
+  transition_time(ano) +
+  labs(title = "{frame_time}")  +
+  # texto --------------------------------------------------#
+  labs(title = "Taxa de homicídio e densidade demográfica - Ano: {frame_time}",
+       subtitle = "Municípios acima de 50.000 habitantes",
+       x = "Densidade demográfica (hab/Km2)",
+       y = "Taxa de Homicídio")
+  
+
+```
+

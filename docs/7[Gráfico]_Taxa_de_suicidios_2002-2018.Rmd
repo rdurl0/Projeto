@@ -1,0 +1,82 @@
+---
+title: "Taxa de suicídios por 100.000 habitantes"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = F,
+  comment = "#>",
+  message = F,
+  warning = F
+)
+```
+
+```{r fig.width=10, fig.align='center', echo=FALSE}
+library(spcrimr)
+library(tidyverse)
+
+soma <- function(x, na.rm = TRUE) sum(x, na.rm = na.rm)
+
+# Taxa de homicídio DATASUS ----------------------------------------------------
+df <- seade_completa %>%
+  unnest() %>%
+  group_by(ano) %>%
+  filter(ano < 2017) %>%
+  summarise(populacao = soma(populacao),
+            homicidio = soma(obitos_por_agressoes),
+            suicidio = soma(obitos_por_suicidio)) %>%
+  mutate_at(c("homicidio", "suicidio"), ~ . / populacao * 100000)
+
+df <- df %>%
+  select(-populacao, -homicidio) %>%
+  gather(key=variavel, value=taxa, -ano)
+
+df %>%
+  ggplot(aes(x=ano, y=taxa)) +
+  geom_line(size=2) +
+  theme_bw() +
+  labs(title="",
+       subtitle = "Estado de São Paulo",
+       x = "Ano",
+       y = "Taxa",
+       caption = "Fonte: Fundação SEADE e DATASUS") +
+  ylim(c(0,6))
+
+```
+
+
+## Código
+
+```{r fig.width=10, fig.align='center', eval=FALSE}
+library(spcrimr)
+library(tidyverse)
+
+soma <- function(x, na.rm = TRUE) sum(x, na.rm = na.rm)
+
+# Taxa de homicídio DATASUS ----------------------------------------------------
+df <- seade_completa %>%
+  unnest() %>%
+  group_by(ano) %>%
+  filter(ano < 2017) %>%
+  summarise(populacao = soma(populacao),
+            homicidio = soma(obitos_por_agressoes),
+            suicidio = soma(obitos_por_suicidio)) %>%
+  mutate_at(c("homicidio", "suicidio"), ~ . / populacao * 100000)
+
+df <- df %>%
+  select(-populacao, -homicidio) %>%
+  gather(key=variavel, value=taxa, -ano)
+
+df %>%
+  ggplot(aes(x=ano, y=taxa)) +
+  geom_line(size=2) +
+  theme_bw() +
+  labs(title="",
+       subtitle = "Estado de São Paulo",
+       x = "Ano",
+       y = "Taxa",
+       caption = "Fonte: Fundação SEADE e DATASUS") +
+  ylim(c(0,6))
+
+```

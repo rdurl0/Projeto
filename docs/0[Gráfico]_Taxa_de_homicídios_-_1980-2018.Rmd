@@ -1,0 +1,123 @@
+---
+title: "Taxa de homicídios por 100.000 habitantes"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = F,
+  comment = "#>",
+  message = F,
+  warning = F
+)
+```
+
+```{r fig.width=10, fig.align='center', echo=FALSE}
+library(spcrimr)
+library(tidyverse)
+
+soma <- function(x, na.rm = TRUE) sum(x, na.rm = na.rm)
+
+# Prepara dados ----------------------------------------------------------------
+hmc <- ssp_ocorrencias_crimes %>% select(chave:ano, homicidio_doloso)
+
+df <- seade_completa %>%
+  unnest() %>%
+  select(chave, ano, municipio = nm_municip_ascii,
+         populacao, obitos_por_agressoes) %>%
+  full_join(., hmc, by = c("chave", "municipio", "ano"))
+
+# transforma -------------------------------------------------------------------
+df <- df %>%
+  group_by(ano) %>%
+  summarise(populacao = soma(populacao),
+            `Óbitos por agressão (DATASUS)` = soma(obitos_por_agressoes),
+            `Ocorrências de homicídio doloso (SSP)` = soma(homicidio_doloso)) %>%
+  mutate_at(c("Ocorrências de homicídio doloso (SSP)",
+              "Óbitos por agressão (DATASUS)"),
+            ~ . / populacao * 100000)
+
+df <- df %>%
+  select(-populacao) %>%
+  gather(key=variavel, value=taxa, -ano) %>%
+  mutate(taxa = ifelse(taxa==0, NA, taxa))
+
+# Visualiza --------------------------------------------------------------------
+df %>% 
+  ggplot(aes(x = ano, y = taxa, color = variavel)) +
+  geom_line() +
+  ylim(c(0,50)) +
+  geom_line(size=1.5) +
+  theme_bw() +
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust=1, vjust=1),
+        plot.title = element_text(hjust = .5),
+        plot.subtitle = element_text(hjust = .5)) +
+  labs(title="",
+       subtitle = "Estado de São Paulo",
+       x = "Ano",
+       y = "Taxa",
+       caption = "Fonte: Fundação SEADE, DATASUS e SSP/SP") +
+  scale_x_discrete(limits = seq(1980, 2018),
+                   breaks = seq(1980, 2018),
+                   labels = seq(1980, 2018)) 
+
+  
+
+```
+
+
+## Código
+
+```{r fig.width=10, fig.align='center', eval=FALSE}
+soma <- function(x, na.rm = TRUE) sum(x, na.rm = na.rm)
+
+# Prepara dados ----------------------------------------------------------------
+hmc <- ssp_ocorrencias_crimes %>% select(chave:ano, homicidio_doloso)
+
+df <- seade_completa %>%
+  unnest() %>%
+  select(chave, ano, municipio = nm_municip_ascii,
+         populacao, obitos_por_agressoes) %>%
+  full_join(., hmc, by = c("chave", "municipio", "ano"))
+
+# transforma -------------------------------------------------------------------
+df <- df %>%
+  group_by(ano) %>%
+  summarise(populacao = soma(populacao),
+            `Óbitos por agressão (DATASUS)` = soma(obitos_por_agressoes),
+            `Ocorrências de homicídio doloso (SSP)` = soma(homicidio_doloso)) %>%
+  mutate_at(c("Ocorrências de homicídio doloso (SSP)",
+              "Óbitos por agressão (DATASUS)"),
+            ~ . / populacao * 100000)
+
+df <- df %>%
+  select(-populacao) %>%
+  gather(key=variavel, value=taxa, -ano) %>%
+  mutate(taxa = ifelse(taxa==0, NA, taxa))
+
+# Visualiza --------------------------------------------------------------------
+df %>% 
+  ggplot(aes(x = ano, y = taxa, color = variavel)) +
+  geom_line() +
+  ylim(c(0,50)) +
+  geom_line(size=1.5) +
+  theme_bw() +
+  theme(legend.position = "top",
+        legend.title = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust=1, vjust=1),
+        plot.title = element_text(hjust = .5),
+        plot.subtitle = element_text(hjust = .5)) +
+  labs(title="",
+       subtitle = "Estado de São Paulo",
+       x = "Ano",
+       y = "Taxa",
+       caption = "Fonte: Fundação SEADE, DATASUS e SSP/SP") +
+  scale_x_discrete(limits = seq(1980, 2018),
+                   breaks = seq(1980, 2018),
+                   labels = seq(1980, 2018)) 
+
+  
+```
