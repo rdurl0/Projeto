@@ -26,22 +26,21 @@ indice <- arquivos %>%
   str_remove("^[:digit:]") %>%
   str_remove(".html") %>%
   str_replace_all("_", " ") %>%
-  paste0("#### ", ., " [clique aqui](`r ", url, "`)")
+  paste0("#### ", .)
 ```
 
 
 
-`r indice[1]`
+`r indice[1]` [clique aqui](`r url[1]`)
 
-`r indice[2]`
+`r indice[2]` [clique aqui](`r url[2]`)
 
-`r indice[3]`
+`r indice[3]` [clique aqui](`r url[3]`)
 
-`r indice[4]`
+`r indice[4]` [clique aqui](`r url[4]`)
 
-`r indice[5]`
+`r indice[5]` [clique aqui](`r url[5]`)
 
-`r indice[6]`
+`r indice[6]` [clique aqui](`r url[6]`)
 
-`r indice[7]`
-
+`r indice[7]` [clique aqui](`r url[7]`)
