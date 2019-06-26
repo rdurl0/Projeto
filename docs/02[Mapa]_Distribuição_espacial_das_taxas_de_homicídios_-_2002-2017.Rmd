@@ -1,0 +1,87 @@
+---
+title: "Distribuição espacial das taxas de homicídios no estado de São Paulo (2002-2018)"
+author: "Raul de Sá Durlo"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+##
+
+```{r fig.width=12, fig.height=8, fig.align='center', echo=FALSE}
+
+library(tidyverse)
+library(spcrimr)
+library(sf)
+library(gganimate)
+
+
+# Prepara dados ----------------------------------------------------------------
+hmc <- ssp_ocorrencias_crimes %>% select(chave:ano, homicidio_doloso)
+
+df <- seade %>%
+  select(chave:ano, populacao) %>%
+  inner_join(., hmc, by = c("chave", "municipio", "ano")) %>%
+  mutate
+
+df.sf <- inner_join(sf_sampa, df, by = c("municipio", "chave"))
+
+df.sf %>%
+  filter(homicidio_doloso != 0) %>%
+  ggplot() +
+  geom_sf(aes(fill = log(homicidio_doloso / populacao * 1e+05))) +
+  geom_sf(data = df.sf %>% filter(ano == 2002 & homicidio_doloso == 0),
+          fill = "darkblue") +
+  scale_fill_viridis_c(option = "plasma") +
+  labs(title = "Taxa de homicídios por 100.000 habitantes - {frame_time}",
+       subtitle = "Distribuição nos 645 municípios o estado de São Paulo",
+       fill = "Taxa de homicídios \n (log)") +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
+  # animations params --------------------------------------------------#
+  transition_time(as.integer(ano))
+```
+
+## Código
+
+
+```{r eval=FALSE}
+library(tidyverse)
+library(spcrimr)
+library(sf)
+
+
+# Prepara dados ----------------------------------------------------------------
+hmc <- ssp_ocorrencias_crimes %>% select(chave:ano, homicidio_doloso)
+
+df <- seade %>%
+  select(chave:ano, populacao) %>%
+  inner_join(., hmc, by = c("chave", "municipio", "ano")) %>%
+  mutate
+
+df.sf <- inner_join(sf_sampa, df, by = c("municipio", "chave"))
+
+df.sf %>%
+  filter(homicidio_doloso != 0) %>%
+  ggplot() +
+  geom_sf(aes(fill = log(homicidio_doloso / populacao * 1e+05))) +
+  geom_sf(data = df.sf %>% filter(ano == 2002 & homicidio_doloso == 0),
+          fill = "darkblue") +
+  scale_fill_viridis_c(option = "plasma") +
+  labs(title = "Taxa de homicídios por 100.000 habitantes - {frame_time}",
+       subtitle = "Distribuição nos 645 municípios o estado de São Paulo",
+       fill = "Taxa de homicídios \n (log)") +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) +
+  # animations params --------------------------------------------------#
+  transition_time(as.integer(ano))
+```
+

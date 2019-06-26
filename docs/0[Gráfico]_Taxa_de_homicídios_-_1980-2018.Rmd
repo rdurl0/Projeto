@@ -1,5 +1,5 @@
 ---
-title: "Taxa de homicídios por 100.000 habitantes"
+title: ""
 output: html_document
 ---
 
@@ -55,7 +55,7 @@ df %>%
         axis.text.x = element_text(angle = 45, hjust=1, vjust=1),
         plot.title = element_text(hjust = .5),
         plot.subtitle = element_text(hjust = .5)) +
-  labs(title="",
+  labs(title="Taxa de homicídios por 100.000 habitantes - (1980-2017)",
        subtitle = "Estado de São Paulo",
        x = "Ano",
        y = "Taxa",
