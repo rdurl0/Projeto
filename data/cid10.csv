@@ -1,0 +1,37 @@
+ Mortalidade - São Paulo
+Óbitos p/Residênc por Ano do Óbito e Faixa Etária det
+Categoria CID-10: X85   Agressao meio drog medic e subst biologicas, X86   Agressao p/meio de subst corrosivas, X87   Agressao p/pesticidas, X88   Agressao p/meio de gases e vapores, X89   Agressao outr prod quim subst nocivas espec, X90   Agressao prod quimicos e subst nocivas NE, X91   Agressao enforc estrangulamento sufocacao, X92   Agressao p/meio de afogamento e submersao, X93   Agressao disparo de arma de fogo de mao, X94   Agressao disparo arma fogo de maior calibre, X95   Agressao disparo outr arma de fogo ou NE, X96   Agressao p/meio de material explosivo, X97   Agressao p/meio de fumaca fogo e chamas, X98   Agressao vapor agua gases ou objetos quentes, X99   Agressao objeto cortante ou penetrante, Y00   Agressao p/meio de um objeto contundente, Y01   Agressao p/meio projecao de um lugar elevado, Y02   Agressao proj coloc vitima obj movimento, Y03   Agressao p/meio de impacto veic a motor, Y04   Agressao p/meio de forca corporal, Y05   Agressao sexual p/meio de forca fisica, Y06   Negligencia e abandono, Y07   Outr sindr de maus tratos, Y08   Agressao p/outr meios espec, Y09   Agressao p/meios NE
+Faixa Etária det: 0 a 6 dias, 7 a 27 dias, 28 a 364 dias, Menor 1 ano (ign), 1 a 4 anos, 5 a 9 anos, 10 a 14 anos, 15 a 19 anos, 20 a 24 anos, 25 a 29 anos, 30 a 34 anos, 35 a 39 anos, 40 a 44 anos, 45 a 49 anos, 50 a 54 anos, 55 a 59 anos, 60 a 64 anos, 65 a 69 anos, 70 a 74 anos, 75 a 79 anos, 80 anos e mais
+Período:1996-2017
+"Ano do Óbito";"0 a 6 dias";"7 a 27 dias";"28 a 364 dias";"Menor 1 ano (ign)";"1 a 4 anos";"5 a 9 anos";"10 a 14 anos";"15 a 19 anos";"20 a 24 anos";"25 a 29 anos";"30 a 34 anos";"35 a 39 anos";"40 a 44 anos";"45 a 49 anos";"50 a 54 anos";"55 a 59 anos";"60 a 64 anos";"65 a 69 anos";"70 a 74 anos";"75 a 79 anos";"80 anos e mais";"Total"
+"1996";3;-;5;-;21;27;136;1758;2686;2364;1846;1182;860;451;283;193;117;62;37;10;32;12073
+"1997";9;3;8;-;22;30;140;1834;2842;2359;1783;1207;804;494;273;166;109;64;39;25;21;12232
+"1998";6;1;17;-;26;15;141;2207;3169;2644;1894;1309;855;554;306;169;104;73;37;17;19;13563
+"1999";1;1;8;-;24;29;168;2567;3558;2893;2121;1520;952;629;346;224;145;74;42;29;22;15353
+"2000";7;-;12;-;21;26;176;2741;3674;2826;2002;1358;944;625;333;196;127;93;43;31;17;15252
+"2001";9;-;10;-;24;16;162;2756;3489;2914;2061;1401;1016;655;382;215;150;54;50;25;18;15407
+"2002";9;2;11;-;20;25;166;2577;3408;2595;1840;1275;899;566;348;191;108;79;45;24;17;14205
+"2003";5;-;5;-;18;17;133;2384;3328;2522;1737;1248;842;555;336;221;121;82;41;25;21;13641
+"2004";4;-;3;-;13;12;105;1720;2576;2038;1455;1079;737;498;284;163;125;68;44;26;23;10973
+"2005";4;2;5;-;17;12;67;1224;1810;1573;1196;860;629;443;278;166;98;82;43;26;17;8552
+"2006";2;-;6;-;21;30;81;1043;1579;1519;1083;814;624;401;290;167;118;66;51;42;33;7970
+"2007";-;-;5;-;20;18;50;715;1144;1137;907;648;502;311;269;140;94;61;39;26;22;6108
+"2008";4;2;9;1;17;18;59;647;1109;1049;837;672;531;351;249;172;108;42;44;34;31;5986
+"2009";1;1;5;-;20;17;47;569;1088;1129;860;659;564;368;296;211;117;78;56;30;38;6154
+"2010";6;-;8;2;13;15;48;564;975;987;816;648;485;365;270;179;106;51;50;37;48;5673
+"2011";5;1;14;-;14;19;39;550;884;935;829;633;477;342;239;195;120;87;45;23;32;5483
+"2012";3;1;8;1;12;20;49;687;1020;1012;865;698;532;396;269;175;129;90;53;39;57;6116
+"2013";3;2;12;-;16;15;52;682;913;841;802;643;479;409;268;214;123;69;56;41;36;5676
+"2014";1;2;7;-;18;12;62;784;889;895;795;603;510;379;302;181;116;91;52;36;36;5771
+"2015";1;1;8;-;11;9;41;651;755;700;706;603;448;328;233;173;115;95;37;39;39;4993
+"2016";6;-;4;-;11;4;26;554;671;606;664;591;373;312;255;147;111;64;52;33;33;4517
+"2017";5;1;2;-;10;12;20;511;658;551;605;529;376;267;242;138;126;71;38;34;30;4226
+"Total";94;20;172;4;389;398;1968;29725;42225;36089;27704;20180;14439;9699;6351;3996;2587;1596;994;652;642;199924
+ Fonte: MS/SVS/CGIAE - Sistema de Informações sobre Mortalidade - SIM
+ Consulte o site da Secretaria Estadual de Saúde para mais informações.
+ Nota:
+ 
+ Em 2011, houve uma mudança no conteúdo da Declaração de Óbito, com maior detalhamento das informações coletadas. Para este ano, foram
+ utilizados simultaneamente os dois formulários. Para mais detalhes sobre as mudanças ocorridas e os seus efeitos, veja o documento
+ "Sistema de Informações sobre Mortalidade - SIM. Consolidação da base de dados de 2011".
+ 

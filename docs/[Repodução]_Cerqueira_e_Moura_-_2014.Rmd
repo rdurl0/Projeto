@@ -1,0 +1,268 @@
+---
+title: 'Demografia e homicídios no Brasil'
+output: html_document
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = F,
+  comment = "#>",
+  message = F,
+  warning = F,
+  fig.align = "center",
+  echo = FALSE
+)
+```
+
+
+
+Reprodução do artigo de [@cerqueira2014demografia].
+
+## Introdução
+
+* A demografia é um dos principais pontos de consenso na discussão a respeito das causas da criminalidade.
+* O crescimento das cidades e adensamentos urbanos são importantes.
+* Estruturas etárias e de gênero: o ciclo de vida na criminalidade the Thorneberry se inicia nos 12 anos de um jovem do sexo masculino, atinge seu ápice aos 18 anos e se esgota antes dos 30 anos.
+* As mudanças geracionais, dadas pela proporção de jovens em relação ao total da população, são evidências mais controversas na literatura (ex: Zimring 2007 e Fox 2000).
+* **No Brasil**: Mello e Schneider (2010) um aumento de 1,0% na população causa um aumnto de 4,5% na taxa de homicídios do estado de São Paulo.
+* Oportunidades no mercado de trabalho se alteram conforme a proporção de jovens na população (Cerqueira e Moura, 2014).
+
+## Demografia e homicídios em São Paulo nas décadas de 1980, 1990, 2000, 2010
+
+> *"A hipótese trabalhada neste capítulo é a de que o aumento da proporção de jovens nos anos 1980 e 1990 e a sua queda a partir de 2023 constituem um dos elementos importantes para ajudar a explicar o aumento e, posteriormente, a queda da taxa de homicídios nos mesmos períodos, no Brasil. [@cerqueira2014demografia, pp. 358]"*
+
+```{r}
+library(tidyverse)
+library(spcrimr)
+
+# agrupa para o estado todo ----------------------------------------------------
+df <- seade_completa %>%
+  unnest() %>%
+  select(ano, populacao, starts_with("populacao_de")) %>%
+  rename(populacao_de_05_a_09_anos   = populacao_de_5_a_9_anos,  
+         populacao_de_00_a_04_anos   = populacao_de_0_a_4_anos) %>%
+  select(-populacao_de_7_a_10_anos,
+         -populacao_de_4_a_6_anos,
+         -populacao_de_0_a_3_anos,
+         -populacao_de_11_a_14_anos,
+         -populacao_de_15_a_17_anos,
+         -populacao_de_18_a_19_anos) %>%
+  select(ano, populacao, populacao_de_00_a_04_anos,
+                         populacao_de_05_a_09_anos,
+                         everything()) %>%
+  group_by(ano) %>%
+  summarise_all(~ sum(., na.rm = T))
+
+cls <- df %>% 
+  names() %>%
+  .[-c(1:2)] %>%
+  str_remove_all("populacao_de_") %>%
+  str_remove_all("_anos") %>%
+  str_replace_all("_", " ") %>%
+  str_replace_all("00 a", "Até")
+
+names(df)[-c(1:2)] <- cls
+
+# agrupa -----------------------------------------------------------------------
+agrup <- function(d){
+  d %>%
+    select(-ano) %>%
+    group_by() %>%
+    summarise_all(~ sum(.)) 
+}
+
+df <-
+  list( df %>% filter(ano <  1990),
+        df %>% filter(ano >= 1990 & ano < 2000),
+        df %>% filter(ano >= 2000 & ano < 2010),
+        df %>% filter(ano >= 2010 & ano < 2019)) %>% 
+  map_df(~ agrup(d = .x)) %>%
+  mutate(decada = c(1980, 1990, 2000, 2010))
+  
+popul.idade <- df %>%
+  mutate_at(vars(matches(" ")), ~ ./ populacao) %>%
+  select(-populacao) %>%
+  gather(key = idade, value = proporcao, -decada, factor_key = TRUE) %>%
+  mutate(decada = factor(decada))
+
+# ggplot ----------------------------------------------------------
+popul.idade %>% 
+  filter(idade != "populacao") %>%
+  ggplot(aes(x = idade,
+             y = proporcao,
+             colour = decada,
+             group = decada)) +
+  geom_line(aes(linetype = decada), size = 1.3) +
+  scale_linetype_manual(values=c("dotted", "solid", "solid", "dashed")) +
+  scale_color_manual(values=c("black", "darkred", "red", "darkorange")) +
+  labs(title = "São Paulo: distribuição da população por idade (1980, 1990, 2000, 2010)",
+       subtitlee = "(Em %)",
+       y = "Percentual em relação à população total",
+       x = "Idade (anos)",
+       caption = "Fonte: Fundação SEADE\nAdaptado de Cerqueira e Moura (2014)") +
+  theme_classic() +
+  theme(legend.position="bottom",
+        axis.text.x = element_text(angle = 45, hjust=1, vjust=1),
+        legend.title = element_blank(),
+        panel.border = element_rect(fill=NA, color = "lightgrey"),
+        panel.grid.major.y = element_line(color="lightgrey")) +
+  scale_y_continuous(limits = c(0, .15),
+                   breaks = seq(0, .15, 0.05),
+                   labels = paste0(seq(0, 15, 5), "%"))
+
+```
+
+
+## Taxa de homicídios
+
+O problema da obtenção das taxas de homicídio no Brasil é conhecido no debate na área. O estado de São Paulo possui uma das bases mais completas (que está disponível no pacote `spcrimr`), entretanto essa base inicia-se somente nos anos 2000.
+
+A alternativa utilizada pelos autores é a base de dados do Sistema de Informações sobre Mortalidade (SIM/Datasus). Os dados são obtidos em conformidade com a revisão vigente do Código Internacional de Doenças, que atualmente está na 10° revisão. Até 1995 o procedimento de coleta de dados seguia a 9° revisão.
+
+### Revisões do Código Internacional de Doenças (CID)
+
+* *CID-9*:
+  + Até 1995 -  9° Revisão - códigos: E960 até E977 [@cerqueira2014causas]
+* *CID-10*:
+  + 1996 até 2018 - 10° Revisão - códigos: X85 a Y09 [@cerqueira2018atlas]
+
+```{r}
+# lendo dados do datasus -------------------------------------------------------
+
+cid <- function(arq, skip, inicio, fim){
+  
+  # carrega cid9.csv
+  cid <- read_delim(
+    file    = paste0("~/Projeto/data/", arq), 
+    delim   = ";",
+    locale  = locale(),
+    trim_ws = TRUE,
+    skip    =  skip,
+    escape_double = FALSE)
+  
+  # subset
+  cid <- cid[1:length(seq(inicio, fim)), -ncol(cid)]
+  
+  # transformações básicas
+  cid <- cid %>%
+    janitor::clean_names() %>% 
+    select(- ano_do_d3_bito) %>%
+    mutate_all(~ str_replace_all(., "-", "NA")) %>%
+    mutate_if(is.character, as.integer)
+  
+  # 
+  ate5 <- cid %>% select(x0_a_6_dias:x1_a_4_anos) %>% rowSums(na.rm = T)
+  olds <- cid %>% select(x75_a_79_anos:x80_anos_e_mais) %>% rowSums(na.rm = T)
+  
+  #
+  cid <- cid %>% 
+    select(x5_a_9_anos:x70_a_74_anos) %>%
+    mutate(ate5 = ate5,
+           olds = olds,
+           ano = seq(inicio, fim)) %>%
+    select(ano, ate5, everything(), olds)
+
+  return(cid)
+
+}
+
+homic_idade <- bind_rows(cid("cid9.csv", skip = 6, 1980, 1995),
+                         cid("cid10.csv", skip = 5, 1996, 2017))
+
+names(homic_idade)[-1] <- cls
+
+decades <- c(1980, 1990, 2000, 2010)
+homic_idade$decada <- decades[findInterval(homic_idade$ano, decades)]
+
+homic.idade <- homic_idade %>%
+  select(-ano) %>%
+  group_by(decada) %>%
+  summarise_all(~ sum(.)) %>%
+  gather(idade, homicidio, -decada) %>%
+  inner_join(., 
+             df %>% select(-populacao) %>% gather(idade, populacao, -decada),
+             by = c("idade", "decada")) %>%
+  mutate(decada = factor(decada))
+
+homic.idade %>%
+  ggplot(aes(x = idade,
+             y = homicidio / populacao * 100000,
+             colour = decada,
+             group = decada)) +
+  geom_line(aes(linetype = decada), size=1.3) +
+  scale_linetype_manual(values=c("dotted", "solid", "solid", "dashed")) +
+  scale_color_manual(values=c("black", "darkred", "red", "darkorange")) +
+  labs(title = "São Paulo: distribuição dos homicídios por idade (1980, 1990, 2000, 2010)",
+       subtitlee = "(Em 100.000 habitantes)",
+       y = "Taxa de homicídios",
+       x = "Idade (anos)",
+       caption = "Fonte: SIM/SME e Fundação SEADE\nAdaptado de Cerqueira e Moura (2014)") +
+  theme_classic() +
+  theme(legend.position="bottom",
+        axis.text.x = element_text(angle = 45, hjust=1, vjust=1),
+        legend.title = element_blank(),
+        panel.border = element_rect(fill=NA, color = "lightgrey"),
+        panel.grid.major.y = element_line(color="lightgrey"))
+```
+
+
+```{r fig.height=6, fig.width=7.5}
+homic_jovem1529 <- homic_idade %>%
+  transmute(ano = ano,
+            homic_jovem1529 = `15 a 19` + `20 a 24` + `25 a 29`,
+            homic_total = rowSums(homic_idade[ ,2:17], na.rm=T)) 
+
+popul_jovem1529 <- seade_completa %>%
+  unnest() %>%
+  group_by(ano) %>%
+  summarise(populacao = sum(populacao, na.rm=T),
+            popul_jovem1529 = sum(populacao_masculina_de_15_a_19_anos, 
+                                  populacao_masculina_de_20_a_24_anos, 
+                                  populacao_masculina_de_25_a_29_anos, na.rm=T))
+
+homic.jovens <- inner_join(popul_jovem1529, homic_jovem1529, by = "ano")
+
+
+d <- homic.jovens %>%
+  transmute(ano = ano,
+            jovens1529 = popul_jovem1529 / populacao,
+            homic = homic_total / populacao * 100000) %>%
+  gather(key = variavel, value = proporcao, -ano)
+
+d %>%
+  ggplot(aes(x = ano,
+             y = proporcao,
+             group = variavel,
+             colour = variavel)) + 
+  geom_line(size=1.3, show.legend = F) +
+  facet_wrap(~ variavel,
+             ncol = 1,
+             scales = "free_y",
+             strip.position = "left", 
+             labeller = as_labeller(c(jovens1529 = "Homens entre 15 e 29 anos\n(em %)",
+                                      homic = "Taxa de homicídios"))) +
+  geom_smooth(data = filter(d, variavel == "jovens1529"),
+              color = "orange",
+              aes(fill="Polinômio (% homens entre 15 e 29 anos)"),
+              method = "lm", formula = y ~ splines::bs(x, 3), se = FALSE) +
+  scale_color_manual(values=c("darkred", "red")) +
+  theme_classic() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 45, hjust=1, vjust=1),
+        legend.title = element_blank(),
+        panel.border = element_rect(fill=NA, color = "lightgrey"),
+        panel.grid.major.y = element_line(color="lightgrey"),
+        strip.placement = "outside",
+        strip.background = element_blank()) +
+  scale_x_discrete(limits = seq(1980, 2017),
+                   breaks = seq(1980, 2017),
+                   labels = seq(1980, 2017)) +
+  labs(x="", y="",
+       title = expression("São Paulo: taxa de" ~  homicídios^1 ~ "e de proporção de homens jovens na" ~ população^2),
+       subtitle = "(1980-2017)",
+       caption= "Fonte: SIM/MS e Fundação SEADE \n Elaboração própria \n Notas: 1 Em mortes por 100.000 habitantes \n 2 Em termos decimais")
+
+```
+
+## Referências
