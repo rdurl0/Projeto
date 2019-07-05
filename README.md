@@ -3,6 +3,9 @@
 
 ### Conteúdo
 
+Link direto:
+<https://rdurl0.github.io/Projeto/>
+
 #### \[Repodução\] Cerqueira e Moura - 2014 [clique aqui](https://rdurl0.github.io/Projeto/docs/%5BRepodução%5D_Cerqueira_e_Moura_-_2014.html)
 
 #### \[Gráfico\] Taxa de homicídios - 1980-2018 [clique aqui](https://rdurl0.github.io/Projeto/docs/0%5BGráfico%5D_Taxa_de_homicídios_-_1980-2018.html)
