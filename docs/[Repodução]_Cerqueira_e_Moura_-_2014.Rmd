@@ -11,7 +11,7 @@ knitr::opts_chunk$set(
   message = F,
   warning = F,
   fig.align = "center",
-  echo = FALSE
+  echo = TRUE
 )
 ```
 
@@ -54,6 +54,7 @@ df <- seade_completa %>%
   group_by(ano) %>%
   summarise_all(~ sum(., na.rm = T))
 
+# labels mais legíveis ---------------------------------------------------------
 cls <- df %>% 
   names() %>%
   .[-c(1:2)] %>%
@@ -166,7 +167,7 @@ cid <- function(arq, skip, inicio, fim){
   return(cid)
 
 }
-getwd()
+
 homic_idade <- bind_rows(cid("cid9.csv", skip = 6, 1980, 1995),
                          cid("cid10.csv", skip = 5, 1996, 2017))
 
@@ -264,5 +265,126 @@ d %>%
        caption= "Fonte: SIM/MS e Fundação SEADE \n Elaboração própria \n Notas: 1 Em mortes por 100.000 habitantes \n 2 Em termos decimais")
 
 ```
+
+
+Destaques:
+
+* Aumento na taxa de homicídios até os anos 2000 em São Paulo, seguido de queda contínua e abrupta.
+* No Brasil, esse aumento vai até 2006 @cerqueira2014causas.
+* Tanto em @cerqueira2014causas quanto neste caso, os jovens são profundamente afetados pela violência.
+
+
+## A relação empírica entre demografia e homicídios com base em dois métodos analíticos
+
+### Metodologia *shift-share*
+
+>"(...) permite decompor a variação da taxa de homicídio em dois componentes, conhecidos como efeitos de **nível** e de **composição**. O cálculo subjacente se inicia com o reconhecimento de que a taxa de homicídios de um país em um dado ano, pode ser escrita como a média ponderada das taxas de homicídio para cada idade, em que o ponderador refere-se à parcela da população naquela idade, conforme descrito na equação (...) (p. 362)". 
+
+
+$$txhom_{t} = \sum_{j = 1}^{n} txhom_{jt} \frac{pop_{jt}}{pop_{t}}$$
+
+* $txhom_{jt}$ é a taxa de homicídios por 100 mil habitantes do grupo etário $j$ no ano $t$.
+* $pop_{jt}$ é a população do grupo etário $j$ no ano $t$
+* $pop_{t}$ é a população no ano $t$
+
+
+
+$$
+txhom_{t} - txhom_{t-1} = \sum_{j = 1}^{n} txhom_{jt} \frac{pop_{jt}}{pop_{t}} - \sum_{j = 1}^{n} txhom_{jt-1} \frac{pop_{jt-1}}{pop_{t-1}}
+$$
+$$
+= (\sum_{j = 1}^{n}(txhom_{jt} - txhom_{jt-1})\bar{(\frac{pop_{jt}}{pop_{t}})}) + (\sum_{j=1}^{n}(\frac{pop_{jt}}{pop_{t}} - \frac{pop_{jt-1}}{pop_{t}}) \bar{txhom_{j}})
+$$
+
+##
+
+```{r}
+# chunk 1 ----------------------------------------------------------------------
+
+ # `populacao_por_faixa_etaria_cols` : populacao por faixa etaria nas colulas
+ # `faixas_etarias` : vetor com os nomes das colunas de `populacao_por_faixa_etaria_cols`
+ # soma_cols() : pega `populacao_por_faixa_etaria_cols` e soma as colunas
+ 
+populacao_por_faixa_etaria_cols <- 
+  seade_completa %>%
+  unnest() %>%
+  select(ano, populacao, starts_with("populacao_de")) %>%
+  rename(populacao_de_05_a_09_anos   = populacao_de_5_a_9_anos,  
+         populacao_de_00_a_04_anos   = populacao_de_0_a_4_anos) %>%
+  select(-populacao_de_7_a_10_anos,
+         -populacao_de_4_a_6_anos,
+         -populacao_de_0_a_3_anos,
+         -populacao_de_11_a_14_anos,
+         -populacao_de_15_a_17_anos,
+         -populacao_de_18_a_19_anos) %>%
+  select(ano, populacao, populacao_de_00_a_04_anos,
+         populacao_de_05_a_09_anos,
+         everything()) %>%
+  group_by(ano) %>%
+  summarise_all(~ sum(., na.rm = T))
+
+# labels mais legíveis
+faixas_etarias <-
+  populacao_por_faixa_etaria_cols %>% 
+  names() %>%
+  .[-c(1:2)] %>%
+  str_remove_all("populacao_de_") %>%
+  str_remove_all("_anos") %>%
+  str_replace_all("_", " ") %>%
+  str_replace_all("00 a", "Até")
+
+names(populacao_por_faixa_etaria_cols)[-c(1:2)] <- faixas_etarias
+
+# agrupa -----------------------------------------------------------------------
+soma_cols <- function(d){
+  
+  d %>%
+    select(-ano) %>%
+    group_by() %>%
+    summarise_all(~ sum(.)) 
+  
+}
+
+populacao_por_faixa_etaria_soma_cols_por_decada <-
+  list( populacao_por_faixa_etaria_cols %>% filter(ano <  1990),
+        populacao_por_faixa_etaria_cols %>% filter(ano >= 1990 & ano < 2000),
+        populacao_por_faixa_etaria_cols %>% filter(ano >= 2000 & ano < 2010),
+        populacao_por_faixa_etaria_cols %>% filter(ano >= 2010 & ano < 2019)) %>% 
+  map_df(~ soma_cols(d = .x)) %>%
+  mutate(decada = c(1980, 1990, 2000, 2010))
+
+proporcao_da_populacao_por_faixa_etaria_rows <-
+  populacao_por_faixa_etaria_soma_cols_por_decada %>%
+  mutate_at(vars(matches(" ")), ~ ./ populacao) %>%
+  select(-populacao) %>%
+  gather(key = idade, value = proporcao, -decada, factor_key = TRUE) %>%
+  mutate(decada = factor(decada))
+
+# ggplot ----------------------------------------------------------
+proporcao_da_populacao_por_faixa_etaria_rows   %>% 
+  filter(idade != "populacao") %>%
+  ggplot(aes(x = idade,
+             y = proporcao,
+             colour = decada,
+             group = decada)) +
+  geom_line(aes(linetype = decada), size = 1.3) +
+  scale_linetype_manual(values=c("dotted", "solid", "solid", "dashed")) +
+  scale_color_manual(values=c("black", "darkred", "red", "darkorange")) +
+  labs(title = "São Paulo: distribuição da população por idade (1980, 1990, 2000, 2010)",
+       subtitlee = "(Em %)",
+       y = "Percentual em relação à população total",
+       x = "Idade (anos)",
+       caption = "Fonte: Fundação SEADE\nAdaptado de Cerqueira e Moura (2014)") +
+  theme_classic() +
+  theme(legend.position="bottom",
+        axis.text.x = element_text(angle = 45, hjust=1, vjust=1),
+        legend.title = element_blank(),
+        panel.border = element_rect(fill=NA, color = "lightgrey"),
+        panel.grid.major.y = element_line(color="lightgrey")) +
+  scale_y_continuous(limits = c(0, .15),
+                     breaks = seq(0, .15, 0.05),
+                     labels = paste0(seq(0, 15, 5), "%"))
+```
+
 
 ## Referências
